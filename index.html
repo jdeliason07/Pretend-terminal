@@ -3,40 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>notes</title>
-<link rel="stylesheet" href="styles.css">
+<title>terminal intro</title>
+<link rel="stylesheet" href="intro.css">
 </head>
 <body>
-  <div class="terminal" id="terminal">
-    <div class="titlebar">
-      <span class="dot dot-red"></span>
-      <span class="dot dot-yellow"></span>
-      <span class="dot dot-green"></span>
-      <span class="titlebar-title">claude — notes — 80×24</span>
+  <div class="intro-root" id="introRoot">
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="intro-terminal">
+      <div class="intro-output" id="introOutput"></div>
     </div>
-
-    <div class="scrollback" id="scrollback">
-      <div class="banner">
-        <div class="banner-line banner-top">✻ Welcome to Claude Code!</div>
-        <div class="banner-line">&nbsp;</div>
-        <div class="banner-line">&nbsp;&nbsp;/help for help, /status for your current setup</div>
-        <div class="banner-line">&nbsp;</div>
-        <div class="banner-line">&nbsp;&nbsp;cwd: <span id="cwd">~/notes</span></div>
-      </div>
-    </div>
-
-    <div class="composer">
-      <div class="prompt-box" id="promptBox">
-        <span class="chevron">&gt;</span>
-        <div class="input" id="input" contenteditable="true" data-placeholder="Write a note, then press Enter…"></div>
-      </div>
-      <div class="hint-row">
-        <span class="hint-left" id="hintLeft">? for shortcuts</span>
-        <span class="hint-right" id="hintRight"><span id="noteCount">no note</span></span>
-      </div>
-    </div>
+    <div class="intro-fade" id="introFade"></div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="intro.js"></script>
 </body>
 </html>
