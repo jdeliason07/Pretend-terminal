@@ -1,5 +1,7 @@
 (() => {
-  const STORAGE_KEY = "pretend-terminal-notes";
+  const STORAGE_KEY = "pretend-terminal-note";
+  const THINKING_MS = 2000;
+  const TYPING_MS = 6000;
 
   const scrollback = document.getElementById("scrollback");
   const input = document.getElementById("input");
@@ -16,16 +18,20 @@
   let busy = false;
   let skipRequested = false;
 
-  function loadNotes() {
+  function loadNote() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
     } catch {
-      return [];
+      return null;
     }
   }
 
-  function saveNotes(notes) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  function saveNote(note) {
+    if (note) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(note));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
   }
 
   function formatTimestamp(ts) {
@@ -33,6 +39,10 @@
     const time = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     const date = d.toLocaleDateString([], { month: "short", day: "numeric" });
     return `${time} · ${date}`;
+  }
+
+  function clearEntries() {
+    document.querySelectorAll(".entry, .system-line").forEach((el) => el.remove());
   }
 
   function renderStaticEntry(text, ts) {
@@ -50,10 +60,10 @@
   }
 
   function renderAll() {
-    const notes = loadNotes();
-    document.querySelectorAll(".entry, .system-line").forEach((el) => el.remove());
-    notes.forEach((n) => renderStaticEntry(n.text, n.ts));
-    noteCount.textContent = notes.length;
+    const note = loadNote();
+    clearEntries();
+    if (note) renderStaticEntry(note.text, note.ts);
+    noteCount.textContent = note ? "note saved" : "no note";
     scrollToBottom();
   }
 
@@ -73,7 +83,7 @@
     scrollToBottom();
   }
 
-  async function runThinking(charCount) {
+  async function runThinking() {
     const wrap = document.createElement("div");
     wrap.className = "thinking";
     const verb = THINKING_VERBS[Math.floor(Math.random() * THINKING_VERBS.length)];
@@ -91,13 +101,12 @@
       spinnerEl.textContent = SPINNER_FRAMES[frame];
     }, 120);
     const secTimer = setInterval(() => {
-      elapsed += 1;
+      elapsed = Math.min(THINKING_MS / 1000, elapsed + 1);
       elapsedEl.textContent = elapsed;
     }, 1000);
 
-    const duration = skipRequested ? 0 : Math.min(1600, 500 + charCount * 4);
     const start = Date.now();
-    while (Date.now() - start < duration && !skipRequested) {
+    while (Date.now() - start < THINKING_MS && !skipRequested) {
       await sleep(50);
     }
 
@@ -118,6 +127,8 @@
     cursor.className = "cursor";
     body.after(cursor);
 
+    const perCharMs = TYPING_MS / text.length;
+
     for (let i = 0; i < text.length; i++) {
       if (skipRequested) {
         body.textContent = text;
@@ -125,9 +136,8 @@
       }
       body.textContent += text[i];
       scrollToBottom();
-      const ch = text[i];
-      const delay = /\s/.test(ch) ? 20 : 12 + Math.random() * 26;
-      await sleep(delay);
+      const jitter = (Math.random() - 0.5) * perCharMs * 0.6;
+      await sleep(Math.max(4, perCharMs + jitter));
     }
 
     cursor.remove();
@@ -138,7 +148,6 @@
     container.appendChild(ts);
 
     scrollToBottom();
-    return Date.now();
   }
 
   async function handleSubmit(rawText) {
@@ -146,19 +155,19 @@
     if (!text) return;
 
     if (text === "/clear") {
-      const notes = loadNotes();
-      if (notes.length === 0) {
-        printSystemLine("(no notes to clear)");
+      const note = loadNote();
+      if (!note) {
+        printSystemLine("(no note to clear)");
         return;
       }
-      saveNotes([]);
+      saveNote(null);
       renderAll();
       printSystemLine("(cleared)");
       return;
     }
 
     if (text === "/help") {
-      printSystemLine("/clear   clear all notes\n/help    show this help");
+      printSystemLine("/clear   clear the current note\n/help    show this help");
       return;
     }
 
@@ -167,13 +176,14 @@
     promptBox.classList.add("busy");
     input.contentEditable = "false";
 
-    await runThinking(text.length);
+    clearEntries();
+
+    await runThinking();
     await streamText(text);
 
-    const notes = loadNotes();
-    notes.push({ text, ts: Date.now() });
-    saveNotes(notes);
-    noteCount.textContent = notes.length;
+    const note = { text, ts: Date.now() };
+    saveNote(note);
+    noteCount.textContent = "note saved";
 
     busy = false;
     promptBox.classList.remove("busy");
