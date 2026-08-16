@@ -127,6 +127,10 @@
     cursor.className = "cursor";
     body.after(cursor);
 
+    const blinkTimer = setInterval(() => {
+      cursor.classList.toggle("cursor-off");
+    }, 530);
+
     const perCharMs = TYPING_MS / text.length;
 
     for (let i = 0; i < text.length; i++) {
@@ -134,12 +138,15 @@
         body.textContent = text;
         break;
       }
+      // typing a character always shows a solid cursor, like a real terminal
+      cursor.classList.remove("cursor-off");
       body.textContent += text[i];
       scrollToBottom();
       const jitter = (Math.random() - 0.5) * perCharMs * 0.6;
       await sleep(Math.max(4, perCharMs + jitter));
     }
 
+    clearInterval(blinkTimer);
     cursor.remove();
 
     const ts = document.createElement("span");

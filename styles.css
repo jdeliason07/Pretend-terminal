@@ -169,11 +169,11 @@ body {
   background: var(--text);
   vertical-align: text-bottom;
   margin-left: 1px;
-  animation: blink 1s step-start infinite;
+  opacity: 1;
 }
 
-@keyframes blink {
-  50% { opacity: 0; }
+.cursor.cursor-off {
+  opacity: 0;
 }
 
 .composer {
