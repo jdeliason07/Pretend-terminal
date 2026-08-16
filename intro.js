@@ -4,7 +4,7 @@
 
   const PROMPT_TEXT = "For the creators of the world";
   const WELCOME_TEXT = "Welcome";
-  const ASK_TEXT = "What will you build?";
+  const ASK_TEXT = "Create.";
 
   const SPINNER_FRAMES = ["✢", "✳", "✶", "✻", "✽"];
   const THINKING_VERBS = ["Pondering", "Noodling", "Ruminating", "Percolating"];
